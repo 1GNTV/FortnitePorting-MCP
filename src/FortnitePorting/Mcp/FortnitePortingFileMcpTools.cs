@@ -179,8 +179,8 @@ public sealed partial class FortnitePortingMcpTools
 
         try
         {
-            var objects = await AppServices.UEParse.Provider!.LoadAllObjectsAsync(
-                AppServices.Exporter.FixPath(normalized));
+            var objects = (await AppServices.UEParse.Provider!.LoadAllObjectsAsync(
+                AppServices.Exporter.FixPath(normalized))).ToArray();
 
             var results = objects
                 .Take(limit)
@@ -197,7 +197,7 @@ public sealed partial class FortnitePortingMcpTools
             return Json(new
             {
                 file = normalized,
-                totalObjects = objects.Count,
+                totalObjects = objects.Length,
                 count = results.Length,
                 results
             });
