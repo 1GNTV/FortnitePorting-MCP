@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 namespace FortnitePorting.Mcp;
 
 [McpServerToolType]
-public sealed class FortnitePortingMcpTools
+public sealed partial class FortnitePortingMcpTools
 {
     [McpServerTool(Name = "fortnite_status")]
     [Description("Returns Fortnite Porting, asset registry, MCP endpoint, and live export plugin status.")]
