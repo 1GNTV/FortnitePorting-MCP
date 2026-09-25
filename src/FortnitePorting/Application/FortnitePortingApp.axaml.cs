@@ -30,6 +30,7 @@ public partial class FortnitePortingApp : Avalonia.Application
         }
         
         AppServices.Initialize();
+        _ = AppServices.Mcp.StartAsync();
         
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

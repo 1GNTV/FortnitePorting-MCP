@@ -42,6 +42,7 @@ public static class AppServices
     public static ExportAssetProvider ExportAssets => Services.GetRequiredService<ExportAssetProvider>();
     public static WindowManagerService WindowManager => Services.GetRequiredService<WindowManagerService>();
     public static AudioPlaybackService Audio => Services.GetRequiredService<AudioPlaybackService>();
+    public static McpServerService Mcp => Services.GetRequiredService<McpServerService>();
    
     // ViewModels
     public static AppWindowModel AppWM => Services.GetRequiredService<AppWindowModel>();

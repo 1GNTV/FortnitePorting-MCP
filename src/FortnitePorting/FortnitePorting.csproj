@@ -33,6 +33,7 @@
         <PackageReference Include="Microsoft.AspNetCore.DataProtection" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" />
         <PackageReference Include="NAudio" />
         <PackageReference Include="NAudio.Vorbis" />
         <PackageReference Include="NodifyAvalonia" />

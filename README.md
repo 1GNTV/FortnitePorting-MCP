@@ -22,6 +22,30 @@
 - **Preview before exporting** - Inspect models, materials, textures, audio, and raw file properties.
 - **Automate the setup** - Fetch required AES keys and mappings automatically, with configurable export settings.
 
+## MCP Server
+
+This fork exposes Fortnite Porting as a local Model Context Protocol server while reusing the existing CUE4Parse and export pipeline.
+
+- Streamable HTTP endpoint: `http://127.0.0.1:6010/mcp`
+- Health endpoint: `http://127.0.0.1:6010/health`
+- The server binds to loopback only by default.
+- Set `FORTNITE_PORTING_MCP_URL` to change the local base URL.
+- Set `FORTNITE_PORTING_MCP_DISABLED=1` to disable the MCP server.
+
+Available tools:
+
+| Tool | Purpose |
+| --- | --- |
+| `fortnite_status` | Check Fortnite/CUE4Parse readiness and Blender/Unreal plugin status |
+| `fortnite_list_asset_types` | List registry-filterable Fortnite Porting asset types |
+| `fortnite_search_assets` | Search the Fortnite Asset Registry by name, path, class, and optional type |
+| `fortnite_list_assets` | Page through assets for a specific Fortnite Porting type |
+| `fortnite_get_asset` | Load an Unreal object and inspect its core metadata/export type |
+| `fortnite_get_asset_properties` | Return the raw property view used by Fortnite Porting |
+| `fortnite_export_asset` | Export to Blender, Unreal Engine, or the configured Assets Folder |
+
+Launch Fortnite Porting normally and complete its Fortnite loading/setup first. MCP clients can then connect to the endpoint above. Blender and Unreal exports still require the corresponding Fortnite Porting companion plugin to be installed and running.
+
 ## Requirements
 
 - Windows x64
