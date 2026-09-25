@@ -1,117 +1,310 @@
 <div align="center">
 
-# Fortnite Porting
-
+# Fortnite Porting MCP
 
 [![Discord](https://img.shields.io/discord/866821077769781249?logo=discord&logoColor=white&label=Discord&color=7289da)](https://discord.gg/fortniteporting)
 [![Blender](https://img.shields.io/badge/Blender-4.2+-blue?logo=blender&logoColor=white&color=orange)](https://www.blender.org/download/)
 [![Unreal](https://img.shields.io/badge/Unreal-5.8-blue?logo=unreal-engine&logoColor=white&color=white)](https://www.unrealengine.com/en-US/download)
-[![Release](https://img.shields.io/github/release/h4lfheart/FortnitePorting)](../../releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/h4lfheart/FortnitePorting/total?color=green)](../../releases)
 
 <img alt="Fortnite Porting" src=".github/cover.png" />
 
 </div>
 
+This fork adds a local **Model Context Protocol (MCP)** server to Fortnite Porting so an AI client can search, inspect, browse, and export Fortnite assets through the same CUE4Parse data and export pipeline used by the app.
+
+> [!IMPORTANT]
+> This repository is a fork of [h4lfheart/FortnitePorting](https://github.com/h4lfheart/FortnitePorting). Credit for Fortnite Porting itself goes to the original project and its contributors. This fork adds the MCP layer.
+
 ## Features
 
-- **Browse Fortnite assets** - Explore cosmetics, props, gameplay items, and more through a purpose-built interface.
-- **Export directly to creative tools** - Send assets to Blender or Unreal Engine through companion plugins managed inside the app.
-- **Work with complete environments** - Export maps, actors, landscapes, foliage, and more.
-- **Choose your workflow** - Use an installed copy of Fortnite or load assets through On-Demand mode.
-- **Preview before exporting** - Inspect models, materials, textures, audio, and raw file properties.
-- **Automate the setup** - Fetch required AES keys and mappings automatically, with configurable export settings.
+- **Browse Fortnite assets** - Explore cosmetics, props, gameplay items, and more.
+- **Browse the real Fortnite file tree** - Navigate the same virtual file system used by the **Files** tab.
+- **Search raw Fortnite files** - Search .uasset, .umap, and .ufont paths directly.
+- **Inspect Unreal packages** - List package objects and raw asset properties.
+- **Export through AI tools** - Send found assets to Blender, Unreal Engine, or the Assets Folder.
+- **Use normal Fortnite Porting too** - The existing UI and export workflow remain available.
+- **Local MCP server** - Runs on 127.0.0.1 by default and is only reachable from the local machine.
 
-## MCP Server
+# MCP Setup
 
-This fork exposes Fortnite Porting as a local Model Context Protocol server while reusing the existing CUE4Parse and export pipeline.
+## 1. Requirements
 
-- Streamable HTTP endpoint: `http://127.0.0.1:6010/mcp`
-- Health endpoint: `http://127.0.0.1:6010/health`
-- The server binds to loopback only by default.
-- Set `FORTNITE_PORTING_MCP_URL` to change the local base URL.
-- Set `FORTNITE_PORTING_MCP_DISABLED=1` to disable the MCP server.
+You need:
 
-Available tools:
+- **Windows x64**
+- **Fortnite Porting MCP** from this repository
+- Either a local Fortnite installation or Fortnite Porting **On-Demand** mode
+- An MCP-compatible AI client
+- **Blender** and/or **Unreal Engine** only if you want live export directly into those applications
+
+For live export:
+
+- Blender requires the Fortnite Porting Blender companion plugin.
+- Unreal Engine requires the Fortnite Porting / UEFormat companion plugins.
+- These plugins are installed from Fortnite Porting's **Plugin** tab.
+
+You do **not** need Blender or Unreal Engine if you only want to search, inspect, browse, or export files to the Assets Folder.
+
+## 2. Install Fortnite Porting MCP
+
+### Option A - Download a prebuilt Actions artifact
+
+1. Open this repository on GitHub.
+2. Go to **Actions**.
+3. Open the latest successful **Build Commit** workflow on the main branch.
+4. Download the generated FortnitePorting-<commit> artifact.
+5. Extract the archive.
+6. Launch FortnitePorting.exe.
+
+GitHub Actions artifacts expire after GitHub's configured retention period, so if no current artifact is available, build from source using the instructions below.
+
+### Option B - Build from source
+
+Install the **.NET 10 SDK**, then clone this fork with all submodules:
+
+~~~powershell
+git clone --recursive https://github.com/1GNTV/FortnitePorting-MCP.git
+cd FortnitePorting-MCP
+~~~
+
+Restore and publish:
+
+~~~powershell
+dotnet restore ./src/FortnitePorting
+dotnet publish ./src/FortnitePorting -c Release --self-contained -r win-x64 -o "./Release" `
+  -p:PublishSingleFile=true `
+  -p:DebugType=None `
+  -p:DebugSymbols=false `
+  -p:IncludeNativeLibrariesForSelfExtract=true
+~~~
+
+The executable will be placed in:
+
+~~~text
+./Release/FortnitePorting.exe
+~~~
+
+## 3. Complete Fortnite Porting setup
+
+Launch FortnitePorting.exe and finish the normal Fortnite Porting setup first.
+
+Choose one of the supported data sources:
+
+- **Latest Installed**
+- **On-Demand**
+- **Custom**
+
+Wait until Fortnite Porting has finished loading its Fortnite data.
+
+The MCP server starts automatically with the application.
+
+> [!IMPORTANT]
+> Keep FortnitePorting.exe open while using the MCP server.
+
+## 4. Verify that the MCP server is running
+
+The default endpoints are:
+
+~~~text
+MCP:    http://127.0.0.1:6010/mcp
+Health: http://127.0.0.1:6010/health
+~~~
+
+Test the health endpoint from Command Prompt or PowerShell:
+
+~~~powershell
+curl http://127.0.0.1:6010/health
+~~~
+
+A working server returns JSON similar to:
+
+~~~json
+{
+  "service": "FortnitePorting-MCP",
+  "mcp": "http://127.0.0.1:6010/mcp",
+  "fortniteReady": true,
+  "registryAssets": 557759
+}
+~~~
+
+The exact asset count varies by Fortnite version and loaded data.
+
+If fortniteReady is false, let Fortnite Porting finish loading before using MCP tools.
+
+## 5. Add the MCP server to your AI client
+
+Generic Streamable HTTP configuration:
+
+~~~json
+{
+  "mcpServers": {
+    "fortnite-porting": {
+      "type": "http",
+      "url": "http://127.0.0.1:6010/mcp"
+    }
+  }
+}
+~~~
+
+Some MCP clients infer the transport automatically and do not accept the type field. In that case use:
+
+~~~json
+{
+  "mcpServers": {
+    "fortnite-porting": {
+      "url": "http://127.0.0.1:6010/mcp"
+    }
+  }
+}
+~~~
+
+Restart or reconnect your MCP client after changing its configuration.
+
+## 6. Test the connection
+
+Try:
+
+~~~text
+Use fortnite_status and tell me whether Fortnite Porting is ready.
+~~~
+
+Then test real file browsing:
+
+~~~text
+Use fortnite_list_directory with an empty path and show me the root Fortnite folders.
+~~~
+
+Or let the agent search directly:
+
+~~~text
+Search the Fortnite virtual file system for files containing "Midas".
+Inspect the most relevant packages and tell me what objects they contain.
+~~~
+
+If the client can see and call the fortnite_* tools, the MCP connection is working.
+
+# MCP Tools
+
+## Status and Asset Registry
 
 | Tool | Purpose |
 | --- | --- |
-| `fortnite_status` | Check Fortnite/CUE4Parse readiness and Blender/Unreal plugin status |
-| `fortnite_list_asset_types` | List registry-filterable Fortnite Porting asset types |
-| `fortnite_search_assets` | Search the Fortnite Asset Registry by name, path, class, and optional type |
-| `fortnite_list_assets` | Page through assets for a specific Fortnite Porting type |
-| `fortnite_get_asset` | Load an Unreal object and inspect its core metadata/export type |
-| `fortnite_get_asset_properties` | Return the raw property view used by Fortnite Porting |
-| `fortnite_export_asset` | Export an Asset Registry object to Blender, Unreal Engine, or the configured Assets Folder |
-| `fortnite_list_directory` | Browse the real Fortnite virtual file-system tree one folder at a time |
-| `fortnite_search_files` | Search real `.uasset`, `.umap`, and `.ufont` paths with directory/extension filters |
-| `fortnite_get_file_info` | Inspect a real file or directory entry and its VFS source |
-| `fortnite_list_package_objects` | Open a package and enumerate its Unreal objects/export types |
-| `fortnite_export_file` | Export a file found through the Files tree to Blender, Unreal Engine, or Assets Folder |
+| fortnite_status | Check Fortnite/CUE4Parse readiness and Blender/Unreal plugin status |
+| fortnite_list_asset_types | List registry-filterable Fortnite Porting asset types |
+| fortnite_search_assets | Search the Fortnite Asset Registry by name, path, class, and optional type |
+| fortnite_list_assets | Page through assets for a specific Fortnite Porting type |
+| fortnite_get_asset | Load an Unreal object and inspect its metadata/export type |
+| fortnite_get_asset_properties | Return the raw property view used by Fortnite Porting |
+| fortnite_export_asset | Export an Asset Registry object to Blender, Unreal Engine, or the Assets Folder |
 
-Launch Fortnite Porting normally and complete its Fortnite loading/setup first. MCP clients can then connect to the endpoint above. Blender and Unreal exports still require the corresponding Fortnite Porting companion plugin to be installed and running.
+## Real Fortnite File Browser
 
-## Requirements
-
-- Windows x64
-- A local Fortnite installation or On-Demand mode
-- [Blender 5.0+](https://www.blender.org/download/) and/or [Unreal Engine 5.8+](https://www.unrealengine.com/en-US/download) for live import
-
-Blender and Unreal Engine are only required when exporting directly to those applications. Assets can also be exported to a folder.
-
-> [!NOTE]
-> Community-maintained forks are available for other platforms: [FortnitePortingMac](https://github.com/skythumbnails/FortnitePortingMac) and [FortnitePorting-linux](https://github.com/fclivaz42/FortnitePorting-linux). These are not officially supported by this repository.
-
-## Installation
-
-Download the latest release from [GitHub Releases](../../releases/latest).
-
-> [!IMPORTANT]
-> Direct export to **Blender** and **Unreal Engine** requires their respective companion plugins. Install and manage them from the **Plugin** Tab inside Fortnite Porting.
-
-## Quick Start
-
-1. Download and launch `FortnitePorting.exe`.
-2. Complete the initial setup using **Latest Installed**, **On-Demand**, or a **Custom** installation.
-3. If exporting to Blender or Unreal Engine, install the appropriate companion plugin from the **Plugin** Tab.
-4. Open the **Assets** Tab, select an item, choose an export target, and export.
-
-## Export Targets
-
-| Target | Details |
+| Tool | Purpose |
 | --- | --- |
-| **Blender** | Live import through the Fortnite Porting Blender extension |
-| **Unreal Engine** | Live import through the Fortnite Porting and UEFormat plugins |
-| **Assets Folder** | Offline export to the default Fortnite Porting assets directory while maintaining folder structure |
-| **Custom Folder** | Offline export to a directory of your choice without maintaining folder structure |
+| fortnite_list_directory | Browse the real Fortnite virtual file-system tree one folder at a time |
+| fortnite_search_files | Search real .uasset, .umap, and .ufont paths, optionally filtered by directory or extension |
+| fortnite_get_file_info | Inspect a real file or directory entry and its VFS source |
+| fortnite_list_package_objects | Open a package and enumerate its Unreal objects and detected export types |
+| fortnite_export_file | Export a file found through the Files tree to Blender, Unreal Engine, or the Assets Folder |
 
----
+The file-browser tools use Fortnite Porting's actual CUE4Parse provider, so an MCP agent can navigate the same Fortnite virtual file system that the application's **Files** tab uses.
 
-## Building from Source
+# Export Targets
 
-Fortnite Porting requires the [.NET SDK](https://dotnet.microsoft.com/download) and currently targets Windows x64.
+| Target | Requirement | Details |
+| --- | --- | --- |
+| **Blender** | Blender + Fortnite Porting Blender plugin running | Live import through the companion plugin |
+| **Unreal Engine** | Unreal Engine + Fortnite Porting / UEFormat plugins running | Live import into Unreal Engine |
+| **Assets Folder** | None | Offline export to Fortnite Porting's configured assets directory |
 
-Clone the repository with its submodules:
+For MCP exports, use one of these target names:
 
-```sh
-git clone https://github.com/h4lfheart/FortnitePorting --recursive
-```
+~~~text
+blender
+unreal
+assets_folder
+~~~
 
-From the repository root, publish a self-contained build:
+If the Blender or Unreal companion plugin is not running, the corresponding MCP export tool returns an error instead of silently failing.
 
-```sh
-dotnet publish FortnitePorting -c Release --self-contained -r win-x64 -o "./Release" -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -p:IncludeNativeLibrariesForSelfExtract=true
-```
+# Server Configuration
 
-## Links
+By default the MCP server binds only to:
 
+~~~text
+http://127.0.0.1:6010
+~~~
+
+Environment variables:
+
+| Variable | Purpose |
+| --- | --- |
+| FORTNITE_PORTING_MCP_URL | Override the MCP server base URL |
+| FORTNITE_PORTING_MCP_DISABLED=1 | Disable the MCP server |
+
+Example:
+
+~~~powershell
+$env:FORTNITE_PORTING_MCP_URL="http://127.0.0.1:7000"
+./FortnitePorting.exe
+~~~
+
+The MCP endpoint would then be:
+
+~~~text
+http://127.0.0.1:7000/mcp
+~~~
+
+> [!WARNING]
+> The MCP server currently has no authentication layer. The default loopback binding keeps it local to your machine. Do not expose it to your LAN or the public internet unless you understand the security implications.
+
+# Troubleshooting
+
+### curl http://127.0.0.1:6010/health cannot connect
+
+Make sure:
+
+- FortnitePorting.exe is running.
+- You are running the MCP-enabled build from this repository.
+- FORTNITE_PORTING_MCP_DISABLED is not set to 1.
+- Another application is not already using port 6010.
+
+### Health works but fortniteReady is false
+
+Fortnite Porting is still initializing Fortnite/CUE4Parse data. Finish the initial setup and wait for loading to complete.
+
+### The AI client connects but cannot see the tools
+
+Reconnect or restart the MCP client after adding the configuration. Make sure the URL ends in /mcp and not /health.
+
+### Blender or Unreal export fails
+
+Open Fortnite Porting's **Plugin** tab and make sure the appropriate companion plugin is installed and the target application/plugin is running.
+
+Searching and file browsing do not require those companion plugins.
+
+### File browsing says the Files tree is still loading
+
+The application is still building its virtual file tree. Wait briefly and retry. fortnite_search_files can search the underlying provider even while the folder tree is still being prepared.
+
+# Original Fortnite Porting
+
+The original project is available here:
+
+- [Fortnite Porting GitHub](https://github.com/h4lfheart/FortnitePorting)
 - [Website](https://fortniteporting.app)
 - [Discord](https://discord.gg/fortniteporting)
-- [GitHub](https://github.com/h4lfheart/FortnitePorting)
 - [X / Twitter](https://twitter.com/FortnitePorting)
 - [Support on Ko-fi](https://ko-fi.com/h4lfheart)
 
-## License
+Community-maintained ports also exist for other platforms:
+
+- [FortnitePortingMac](https://github.com/skythumbnails/FortnitePortingMac)
+- [FortnitePorting-linux](https://github.com/fclivaz42/FortnitePorting-linux)
+
+These are separate projects and this MCP fork currently targets Windows x64.
+
+# License
 
 Fortnite Porting is distributed under the [GNU General Public License v3.0](LICENSE).
 
@@ -119,7 +312,7 @@ Fortnite Porting is an independent project and is not affiliated with, endorsed 
 
 ---
 
-## Contributors
+## Original Contributors
 
 - [Chippy](https://github.com/Bmarquez1997) - Material system and export feature development.
 - [Ghost](https://github.com/GhostScissors) - RADA and BINKA audio decoders and asset deserialization fixes.
@@ -129,4 +322,4 @@ Fortnite Porting is an independent project and is not affiliated with, endorsed 
 - [MountainFlash](https://github.com/MinshuG) - Inspiration for the project's early automation.
 - [RedHaze](https://github.com/RedHaze) - Pose Asset processing and UEFormat pose export groundwork.
 
-Thank you to everyone who has contributed to Fortnite Porting throughout its development!!
+Thank you to everyone who has contributed to Fortnite Porting throughout its development.
