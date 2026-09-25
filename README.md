@@ -42,7 +42,12 @@ Available tools:
 | `fortnite_list_assets` | Page through assets for a specific Fortnite Porting type |
 | `fortnite_get_asset` | Load an Unreal object and inspect its core metadata/export type |
 | `fortnite_get_asset_properties` | Return the raw property view used by Fortnite Porting |
-| `fortnite_export_asset` | Export to Blender, Unreal Engine, or the configured Assets Folder |
+| `fortnite_export_asset` | Export an Asset Registry object to Blender, Unreal Engine, or the configured Assets Folder |
+| `fortnite_list_directory` | Browse the real Fortnite virtual file-system tree one folder at a time |
+| `fortnite_search_files` | Search real `.uasset`, `.umap`, and `.ufont` paths with directory/extension filters |
+| `fortnite_get_file_info` | Inspect a real file or directory entry and its VFS source |
+| `fortnite_list_package_objects` | Open a package and enumerate its Unreal objects/export types |
+| `fortnite_export_file` | Export a file found through the Files tree to Blender, Unreal Engine, or Assets Folder |
 
 Launch Fortnite Porting normally and complete its Fortnite loading/setup first. MCP clients can then connect to the endpoint above. Blender and Unreal exports still require the corresponding Fortnite Porting companion plugin to be installed and running.
 
